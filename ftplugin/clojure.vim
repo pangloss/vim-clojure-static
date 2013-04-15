@@ -17,7 +17,9 @@ set cpo&vim
 
 let b:undo_ftplugin = 'setlocal iskeyword< define< formatoptions< comments< commentstring<'
 
-setlocal iskeyword+=?,-,*,!,+,/,=,<,>,.,:,$
+" This leaks into all files. very annoying.
+" setlocal iskeyword+=?,-,*,!,+,/,=,<,>,.,:,$
+setlocal iskeyword+=?,-,*,!,+,=,<,>
 
 " There will be false positives, but this is better than missing the whole set
 " of user-defined def* definitions.
