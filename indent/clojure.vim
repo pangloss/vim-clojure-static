@@ -53,6 +53,10 @@ if exists("*searchpairpos")
 		let g:clojure_align_multiline_strings = 0
 	endif
 
+	if !exists('g:clojure_align_subforms')
+		let g:clojure_align_subforms = 0
+	endif
+
 	function! s:SynIdName()
 		return synIDattr(synID(line("."), col("."), 0), "name")
 	endfunction
@@ -144,6 +148,10 @@ if exists("*searchpairpos")
 		return val
 	endfunction
 
+	function! s:StripNamespaceAndMacroChars(word)
+		return substitute(a:word, "\\v%(.*/|[#'`~@^,]*)(.*)", '\1', '')
+	endfunction
+
 	function! s:ClojureIsMethodSpecialCaseWorker(position)
 		" Find the next enclosing form.
 		call search('\S', 'Wb')
@@ -163,7 +171,8 @@ if exists("*searchpairpos")
 		call cursor(nextParen)
 
 		call search('\S', 'W')
-		if g:clojure_special_indent_words =~ '\<' . s:CurrentWord() . '\>'
+		let w = s:StripNamespaceAndMacroChars(s:CurrentWord())
+		if g:clojure_special_indent_words =~ '\<' . w . '\>'
 			return 1
 		endif
 
@@ -269,7 +278,7 @@ if exists("*searchpairpos")
 		" metacharacters.
 		"
 		" e.g. clojure.core/defn and #'defn should both indent like defn.
-		let ww = substitute(w, "\\v%(.*/|[#'`~@^,]*)(.*)", '\1', '')
+		let ww = s:StripNamespaceAndMacroChars(w)
 
 		if &lispwords =~ '\V\<' . ww . '\>'
 			return paren[1] + &shiftwidth - 1
@@ -284,7 +293,7 @@ if exists("*searchpairpos")
 		call search('\v\_s', 'cW')
 		call search('\v\S', 'W')
 		if paren[0] < line(".")
-			return paren[1] + &shiftwidth - 1
+			return paren[1] + (g:clojure_align_subforms ? 0 : &shiftwidth - 1)
 		endif
 
 		call search('\v\S', 'bW')
